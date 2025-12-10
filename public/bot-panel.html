@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deriv Trading Bot - Control Panel</title>
+    <link rel="stylesheet" href="bot-styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Deriv Trading Bot</h1>
+            <p class="subtitle">Fast Odd/Even Strategy Control Panel</p>
+        </header>
+
+        <div class="dashboard">
+            <!-- Status Card -->
+            <div class="card status-card">
+                <h2>Bot Status</h2>
+                <div class="status-indicator">
+                    <span id="statusDot" class="dot stopped"></span>
+                    <span id="statusText">STOPPED</span>
+                </div>
+                <div class="stats">
+                    <div class="stat balance-stat">
+                        <span class="stat-label">💰 Live Balance</span>
+                        <span id="liveBalance" class="stat-value balance">$0.00</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Session Profit</span>
+                        <span id="sessionProfit" class="stat-value profit">$0.00</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Total Trades</span>
+                        <span id="tradeCount" class="stat-value">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuration Card -->
+            <div class="card config-card">
+                <h2>⚙️ Configuration</h2>
+                <form id="configForm">
+                    <div class="form-section">
+                        <h3>API Settings</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="appId">App ID</label>
+                                <input type="text" id="appId" value="115442" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="symbol">Symbol</label>
+                                <input type="text" id="symbol" value="R_100" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="token">API Token</label>
+                            <input type="password" id="token" placeholder="Enter your Deriv API token" required>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Strategy Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="baseStake">Base Stake ($)</label>
+                                <input type="number" id="baseStake" value="0.35" step="0.01" min="0.35" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="maxTrades">Max Trades</label>
+                                <input type="number" id="maxTrades" value="99999" min="1" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="martingaleStakes">Martingale Stakes (comma-separated)</label>
+                            <input type="text" id="martingaleStakes"
+                                value="0.35, 0.45, 0.90, 1.86, 3.82, 7.82, 16.03, 32.85" required>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Risk Management</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="takeProfit">Take Profit ($)</label>
+                                <input type="number" id="takeProfit" value="1.00" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="stopLoss">Stop Loss ($)</label>
+                                <input type="number" id="stopLoss" value="-50" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cooldownDuration">Cooldown (ms)</label>
+                                <input type="number" id="cooldownDuration" value="120000" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="minInterval">Min Interval (ms)</label>
+                                <input type="number" id="minInterval" value="2000" min="1000" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="startBtn" class="btn btn-start">
+                            <span>▶️ Start Bot</span>
+                        </button>
+                        <button type="button" id="stopBtn" class="btn btn-stop" disabled>
+                            <span>⏹️ Stop Bot</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Logs Card -->
+        <div class="card logs-card">
+            <h2>📊 Activity Logs</h2>
+            <div id="logsContainer" class="logs-container">
+                <p class="log-entry">Waiting for bot to start...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="bot-script.js"></script>
+</body>
+
+</html>

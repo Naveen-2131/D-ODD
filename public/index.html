@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth System Demo</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --error: #ef4444;
+            --success: #22c55e;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: grid;
+            gap: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .header p {
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            border: 1px solid var(--border);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--text);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: #64748b;
+        }
+
+        .btn-secondary:hover {
+            background-color: #475569;
+        }
+
+        .status-box {
+            grid-column: 1 / -1;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            font-family: 'Fira Code', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            min-height: 100px;
+        }
+
+        .token-display {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            word-break: break-all;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .token-display.active {
+            display: block;
+        }
+
+        /* Password Toggle Styles */
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            width: auto;
+            color: #64748b;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary);
+            background: none;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Auth System</h1>
+            <p>Secure Node.js Authentication with JWT Bearer Tokens</p>
+        </div>
+
+        <div id="tokenBox" class="token-display">
+            <strong>Current Token:</strong>
+            <div id="tokenValue" style="margin-top: 0.5rem; color: #b45309;"></div>
+        </div>
+
+        <div class="grid">
+            <!-- Registration Card -->
+            <div class="card">
+                <h2>📝 Register</h2>
+                <div style="margin-bottom: 1rem;">
+                    <button type="button" id="randomBtn" style="background-color: #8b5cf6;">🎲 Auto-Fill Random
+                        User</button>
+                    <!-- Error Alert Box -->
+                    <div id="regError"
+                        style="display: none; background: #fee2e2; color: #991b1b; padding: 0.75rem; border-radius: 0.5rem; margin-top: 1rem; font-size: 0.9rem; border: 1px solid #f87171;">
+                        ⚠️ <strong>Error:</strong> <span id="regErrorText"></span>
+                    </div>
+                </div>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="regName" required placeholder="Name">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="regEmail" required placeholder="Email">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="regPassword" required placeholder="Password">
+                            <button type="button" class="password-toggle"
+                                onclick="togglePassword('regPassword', this)">👁️</button>
+                        </div>
+                    </div>
+                    <button type="submit">Create Account</button>
+                    <button type="button" id="clearReg" class="btn-secondary" style="margin-top: 0.5rem;">Clear
+                        Form</button>
+                </form>
+            </div>
+
+            <!-- Login Card -->
+            <div class="card">
+                <h2>🔑 Login</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" required placeholder="john@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="loginPassword" required placeholder="••••••">
+                            <button type="button" class="password-toggle"
+                                onclick="togglePassword('loginPassword', this)">👁️</button>
+                        </div>
+                    </div>
+                    <button type="submit">Sign In</button>
+                </form>
+
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a href="forgot-password.html"
+                        style="color: var(--primary); text-decoration: none; font-size: 0.9rem;">
+                        🔑 Forgot Password?
+                    </a>
+                </div>
+
+                <div style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1rem">
+                    <h2>👤 User Profile</h2>
+                    <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem">Requires Authentication</p>
+                    <button id="getProfileBtn" class="btn-secondary">Get Profile Data</button>
+                    <button id="logoutBtn"
+                        style="margin-top: 0.5rem; background-color: #ef4444; display: none;">Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📡 API Response</h2>
+            <div id="statusBox" class="status-box">// Responses will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle Password Visibility
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
+        // State
+        let authToken = localStorage.getItem('token');
+
+        // UI Elements
+        const tokenBox = document.getElementById('tokenBox');
+        const tokenValue = document.getElementById('tokenValue');
+        const statusBox = document.getElementById('statusBox');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Initialize
+        if (authToken) {
+            updateTokenUI(authToken);
+        }
+
+        // Helper to update UI
+        function updateTokenUI(token) {
+            authToken = token;
+            if (token) {
+                localStorage.setItem('token', token);
+                tokenBox.classList.add('active');
+                tokenValue.textContent = token;
+                logoutBtn.style.display = 'block';
+            } else {
+                localStorage.removeItem('token');
+                tokenBox.classList.remove('active');
+                tokenValue.textContent = '';
+                logoutBtn.style.display = 'none';
+            }
+        }
+
+        function log(data, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            let content;
+            if (data.message) {
+                content = data.message;
+            } else {
+                content = JSON.stringify(data, null, 2);
+            }
+            statusBox.textContent = `[${timestamp}] ${type.toUpperCase()}\n${content}`;
+            statusBox.style.borderColor = type === 'error' ? 'var(--error)' : 'var(--primary)';
+        }
+
+        // Clear Register Form
+        document.getElementById('clearReg').addEventListener('click', () => {
+            document.getElementById('regName').value = '';
+            document.getElementById('regEmail').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regError').style.display = 'none';
+            statusBox.textContent = '// Responses will appear here...';
+        });
+
+        // Register
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) throw data;
+
+                log(data, 'success');
+                if (data.token) updateTokenUI(data.token);
+
+                // Clear error if success
+                document.getElementById('regError').style.display = 'none';
+
+            } catch (err) {
+                log(err, 'error');
+                const errorBox = document.getElementById('regError');
+                const errorText = document.getElementById('regErrorText');
+
+                let msg = err.message || 'Registration failed';
+                if (msg.includes('Duplicate')) msg = 'User already exists! Try the Random Button 🎲';
+
+                errorText.textContent = msg;
+                errorBox.style.display = 'block';
+            }
+        });
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) throw data;
+
+                log(data, 'success');
+                if (data.token) updateTokenUI(data.token);
+
+            } catch (err) {
+                log(err, 'error');
+            }
+        });
+
+        // Get Profile
+        document.getElementById('getProfileBtn').addEventListener('click', async () => {
+            if (!authToken) {
+                log({ message: 'No token found. Please login first.' }, 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) throw data;
+
+                log(data, 'success');
+
+            } catch (err) {
+                log(err, 'error');
+                if (err.message && err.message.includes('token')) {
+                    updateTokenUI(null);
+                }
+            }
+        });
+
+        // Generate Random User
+        document.getElementById('randomBtn').addEventListener('click', () => {
+            const randomId = Math.floor(Math.random() * 10000);
+            document.getElementById('regName').value = `User ${randomId}`;
+            document.getElementById('regEmail').value = `user${randomId}@test.com`;
+            document.getElementById('regPassword').value = 'password123';
+            document.getElementById('regError').style.display = 'none';
+            statusBox.textContent = '// Ready to register unique user!';
+            statusBox.style.borderColor = 'var(--border)';
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            updateTokenUI(null);
+            log({ message: 'Logged out successfully' }, 'info');
+        });
+    </script>
+</body>
+
+</html>
