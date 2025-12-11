@@ -10,7 +10,9 @@ class FastOddEvenStrategy {
         // Strategy Parameters
         this.baseStake = config.baseStake || 0.35;
         this.stake = this.baseStake;
-        this.martingaleStakes = config.martingaleStakes || [0.35, 0.45, 0.90, 1.86, 3.82, 7.82, 16.03, 32.85];
+        this.martingaleStakes = config.martingaleStakes || [0.35, 0.40, 0.80, 1.64];
+        this.overUnderStakes = config.overUnderStakes || config.martingaleStakes || [0.35, 0.45, 0.90, 1.86, 3.82, 7.82, 16.03, 32.85];
+        this.currentMode = 'ODD_EVEN'; // 'ODD_EVEN' or 'OVER_UNDER'
         this.martingaleLevel = 0;
         this.maxMartingaleLevel = this.martingaleStakes.length - 1;
 
@@ -63,6 +65,7 @@ class FastOddEvenStrategy {
     resetSession() {
         this.tradeCount = 0;
         this.stake = this.baseStake;
+        this.currentMode = 'ODD_EVEN';
         this.martingaleLevel = 0;
         this.lastContractId = null;
         this.waitingForExit = false;
@@ -114,17 +117,36 @@ class FastOddEvenStrategy {
                     }
 
                     if (profit > 0) {
-                        console.log(`✅ WIN! Resetting stake.`);
+                        console.log(`✅ WIN! (${this.currentMode})`);
+
+                        if (this.currentMode === 'OVER_UNDER') {
+                            console.log('>>> RECOVERY SUCCESS! Switching back to ODD_EVEN <<<');
+                            this.currentMode = 'ODD_EVEN';
+                        }
+
                         this.stake = this.baseStake;
                         this.martingaleLevel = 0;
                     } else {
+                        console.log(`❌ LOSS (${this.currentMode})`);
                         this.martingaleLevel++;
-                        if (this.martingaleLevel > this.maxMartingaleLevel) {
-                            console.log(`⚠️  Max Level Reached.Resetting.`);
-                            this.martingaleLevel = 0;
+
+                        let currentStakes = this.currentMode === 'ODD_EVEN' ? this.martingaleStakes : this.overUnderStakes;
+                        let maxLevel = currentStakes.length - 1;
+
+                        if (this.martingaleLevel > maxLevel) {
+                            if (this.currentMode === 'ODD_EVEN') {
+                                console.log('>>> MAX LEVEL REACHED (ODD END). Switching to OVER_UNDER <<<');
+                                this.currentMode = 'OVER_UNDER';
+                                this.martingaleLevel = 0;
+                                currentStakes = this.overUnderStakes;
+                            } else {
+                                console.log(`⚠️  Max Level Reached (Over/Under). Resetting.`);
+                                this.martingaleLevel = 0;
+                            }
                         }
-                        this.stake = this.martingaleStakes[this.martingaleLevel] || this.baseStake * 2; // Fallback
-                        console.log(`❌ LOSS.Next Stake = $${this.stake} `);
+
+                        this.stake = currentStakes[this.martingaleLevel] || this.baseStake * 2;
+                        console.log(`Next Stake = $${this.stake} (${this.currentMode})`);
                     }
 
                     this.lastContractId = null;
@@ -150,13 +172,23 @@ class FastOddEvenStrategy {
 
         if (this.waitingForExit) return;
 
-        // --- Logic: If digit > 5 -> Trade ODD ---
+        // --- Trading Logic based on Mode ---
         let contractType = null;
         let prediction = null;
 
-        if (currentDigit > 5) {
-            contractType = 'DIGITODD';
-            console.log(`⚡ Signal: Digit ${currentDigit} > 5. Trading ODD.`);
+        if (this.currentMode === 'ODD_EVEN') {
+            // Original Strategy: Digit > 5 -> Trade ODD
+            if (currentDigit > 5) {
+                contractType = 'DIGITODD';
+                console.log(`⚡ Signal: Digit ${currentDigit} > 5. Trading ODD.`);
+            }
+        } else if (this.currentMode === 'OVER_UNDER') {
+            // Recovery Strategy: Digit 1 -> Trade OVER 4
+            if (currentDigit === 1) {
+                contractType = 'DIGITOVER';
+                prediction = 4;
+                console.log(`⚡ Signal (Recovery): Digit is 1. Trading OVER 4.`);
+            }
         }
 
         // Execute Trade
