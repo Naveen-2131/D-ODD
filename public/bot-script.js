@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
             maxTrades: document.getElementById('maxTrades').value,
             baseStake: document.getElementById('baseStake').value,
             martingaleStakes: document.getElementById('martingaleStakes').value,
+            overUnderStakes: document.getElementById('overUnderStakes').value,
             takeProfit: document.getElementById('takeProfit').value,
             stopLoss: document.getElementById('stopLoss').value,
             cooldownDuration: document.getElementById('cooldownDuration').value,
