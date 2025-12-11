@@ -81,6 +81,7 @@ app.get('/api/config', (req, res) => {
         maxTrades: 99999,
         baseStake: 0.35,
         martingaleStakes: '0.35, 0.45, 0.90, 1.86, 3.82, 7.82, 16.03, 32.85',
+        overUnderStakes: '0.35, 0.45, 0.90, 1.86, 3.82, 7.82, 16.03, 32.85',
         takeProfit: 1.00,
         stopLoss: -50,
         cooldownDuration: 120000,
@@ -106,11 +107,18 @@ app.post('/api/start', async (req, res) => {
             .map(s => parseFloat(s.trim()))
             .filter(n => !isNaN(n));
 
+        // Parse over/under stakes
+        const overUnderStakes = (config.overUnderStakes || config.martingaleStakes)
+            .split(',')
+            .map(s => parseFloat(s.trim()))
+            .filter(n => !isNaN(n));
+
         // Create strategy with config
         strategyInstance = new FastOddEvenStrategy({
             maxTrades: parseInt(config.maxTrades),
             baseStake: parseFloat(config.baseStake),
             martingaleStakes: martingaleStakes,
+            overUnderStakes: overUnderStakes,
             takeProfit: parseFloat(config.takeProfit),
             stopLoss: parseFloat(config.stopLoss),
             cooldownDuration: parseInt(config.cooldownDuration),
