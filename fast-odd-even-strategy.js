@@ -158,8 +158,8 @@ class FastOddEvenStrategy {
 
         // --- MAIN STRATEGY ---
         if (this.currentMode === 'ODD_EVEN') {
-            if (currentDigit === 1) {
-                console.log(`⚡ ODD_EVEN Signal: Digit ${currentDigit} > 5 → ODD`);
+            if (currentDigit >= 0) {
+                console.log(`⚡ ODD_EVEN Signal: Digit ${currentDigit} >= 0 → ODD`);
                 await this.executeTrade('DIGITODD');
                 return;
             }
@@ -168,7 +168,7 @@ class FastOddEvenStrategy {
         // --- OVER/UNDER RECOVERY WITH DUAL TRADES ---
         if (this.currentMode === 'OVER_UNDER') {
             if (currentDigit === 1) {
-                console.log(`⚡ Recovery Signal: Digit 1 → Buying BOTH DIGITOVER 4 + DIGITUNDER 6`);
+                console.log(`⚡ Recovery Signal: Digit 1 → Buying BOTH DIGITOVER 5 + DIGITUNDER 6`);
 
                 await this.executeDual('DIGITOVER', 5);
                 await this.executeDual('DIGITUNDER', 6);
@@ -211,3 +211,4 @@ class FastOddEvenStrategy {
 }
 
 module.exports = FastOddEvenStrategy;
+
